@@ -35,7 +35,7 @@ export default function AprovacoesClient({ submissions: initial, reviewerId }: P
 
   async function approve(id: string) {
     setProcessing(id)
-    const { error } = await supabase.rpc('approve_submission', {
+    const { error } = await (supabase as any).rpc('approve_submission', {
       p_submission_id: id,
       p_reviewer_id: reviewerId,
       p_points: points[id] || 100,
@@ -52,7 +52,7 @@ export default function AprovacoesClient({ submissions: initial, reviewerId }: P
 
   async function reject(id: string, note: string) {
     setProcessing(id)
-    const { error } = await supabase.rpc('reject_submission', {
+    const { error } = await (supabase as any).rpc('reject_submission', {
       p_submission_id: id,
       p_reviewer_id: reviewerId,
       p_note: note || 'Comprovante não atende aos critérios.',
