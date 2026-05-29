@@ -10,19 +10,23 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error && data.user) {
-      // Verificar se já tem perfil
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', data.user.id)
-        .single()
+      // Verificar se já tem perfil — tentar várias vezes (auth pode ser lento)
+      let profile = null
+      for (let i = 0; i < 3; i++) {
+        const { data: p } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', data.user.id)
+          .maybeSingle()
+        if (p) { profile = p; break }
+        await new Promise(r => setTimeout(r, 500))
+      }
 
       if (!profile) {
-        // Primeiro acesso — redirecionar para onboarding
         return NextResponse.redirect(`${origin}/onboarding`)
       }
 
-      if (profile.role && ['admin', 'curador', 'super_admin'].includes(profile.role)) {
+      if (['admin', 'curador', 'super_admin'].includes(profile.role)) {
         return NextResponse.redirect(`${origin}/admin/dashboard`)
       }
 
