@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 
@@ -20,6 +20,24 @@ export default function OnboardingPage() {
   const router = useRouter()
   const supabase = createClient()
 
+  // Se já tem perfil, redirecionar direto
+  useEffect(() => {
+    async function checkProfile() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      const { data: profile } = await supabase
+        .from('profiles').select('role').eq('id', user.id).maybeSingle()
+      if (profile) {
+        if (['admin', 'curador', 'super_admin'].includes(profile.role)) {
+          router.replace('/admin/dashboard')
+        } else {
+          router.replace('/desafios')
+        }
+      }
+    }
+    checkProfile()
+  }, [])
+
   const pct = (step / 4) * 100
 
   function update(key: string, value: string) {
@@ -33,7 +51,6 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Sessão inválida')
 
-      // Buscar o programa pelo slug
       const { data: program } = await supabase
         .from('programs')
         .select('id')
@@ -42,7 +59,6 @@ export default function OnboardingPage() {
 
       if (!program) throw new Error('Programa não encontrado')
 
-      // Criar perfil
       const { error: profileError } = await supabase
         .from('profiles')
         .insert({
@@ -66,7 +82,6 @@ export default function OnboardingPage() {
 
   return (
     <div id="app-frame">
-      {/* Progresso */}
       <div className="h-1 bg-purple-100 flex-shrink-0">
         <div
           className="h-full transition-all duration-500"
@@ -75,7 +90,6 @@ export default function OnboardingPage() {
       </div>
 
       <div className="flex flex-col h-full overflow-hidden">
-        {/* Step 1 — Boas-vindas */}
         {step === 1 && (
           <div className="flex flex-col items-center justify-center flex-1 px-8 text-center">
             <div className="text-6xl mb-6">🚀</div>
@@ -95,14 +109,12 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 2 — Seu programa */}
         {step === 2 && (
           <div className="flex flex-col flex-1 px-6 pt-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-display)' }}>
               Qual é o seu programa?
             </h2>
             <p className="text-sm text-gray-500 mb-6">Selecione a marca do seu programa de engajamento</p>
-
             <div className="space-y-3 mb-6">
               {Object.entries(PROGRAMS).map(([slug, name]) => (
                 <button
@@ -120,7 +132,6 @@ export default function OnboardingPage() {
                 </button>
               ))}
             </div>
-
             <div className="flex gap-3 mt-auto pb-8">
               <button onClick={() => setStep(1)} className="py-3 px-5 rounded-full border border-gray-200 text-gray-500 text-sm font-semibold">
                 ← Voltar
@@ -136,19 +147,15 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 3 — Seu nome */}
         {step === 3 && (
           <div className="flex flex-col flex-1 px-6 pt-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-display)' }}>
               Como você se chama?
             </h2>
             <p className="text-sm text-gray-500 mb-6">Como aparecerá no ranking e no seu perfil</p>
-
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">
-                  Nome completo *
-                </label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">Nome completo *</label>
                 <input
                   value={form.name}
                   onChange={e => update('name', e.target.value)}
@@ -157,9 +164,7 @@ export default function OnboardingPage() {
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">
-                  WhatsApp
-                </label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">WhatsApp</label>
                 <input
                   value={form.whatsapp}
                   onChange={e => update('whatsapp', e.target.value)}
@@ -168,7 +173,6 @@ export default function OnboardingPage() {
                 />
               </div>
             </div>
-
             <div className="flex gap-3 mt-auto pb-8">
               <button onClick={() => setStep(2)} className="py-3 px-5 rounded-full border border-gray-200 text-gray-500 text-sm font-semibold">
                 ← Voltar
@@ -185,19 +189,15 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* Step 4 — Redes sociais */}
         {step === 4 && (
           <div className="flex flex-col flex-1 px-6 pt-8">
             <h2 className="text-xl font-bold text-gray-900 mb-1" style={{ fontFamily: 'var(--font-display)' }}>
               Suas redes sociais
             </h2>
             <p className="text-sm text-gray-500 mb-6">Conecte seus perfis para facilitar a validação dos comprovantes</p>
-
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">
-                  @ Instagram
-                </label>
+                <label className="text-xs font-bold text-gray-400 uppercase tracking-widest block mb-2">@ Instagram</label>
                 <input
                   value={form.instagram}
                   onChange={e => update('instagram', e.target.value)}
@@ -206,11 +206,7 @@ export default function OnboardingPage() {
                 />
               </div>
             </div>
-
-            {error && (
-              <p className="text-red-500 text-sm mt-4">{error}</p>
-            )}
-
+            {error && <p className="text-red-500 text-sm mt-4">{error}</p>}
             <div className="flex gap-3 mt-auto pb-8">
               <button onClick={() => setStep(3)} className="py-3 px-5 rounded-full border border-gray-200 text-gray-500 text-sm font-semibold">
                 ← Voltar
