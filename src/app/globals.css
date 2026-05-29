@@ -12,6 +12,9 @@
   --green: #059669;
   --amber: #D97706;
   --red: #DC2626;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
 
 * {
