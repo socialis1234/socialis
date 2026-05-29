@@ -1,22 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { DM_Sans, Syne, DM_Mono } from 'next/font/google'
 import './globals.css'
-
-const dmSans = DM_Sans({
-  subsets: ['latin'],
-  variable: '--font-sans',
-})
-
-const syne = Syne({
-  subsets: ['latin'],
-  variable: '--font-display',
-})
-
-const dmMono = DM_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  variable: '--font-mono',
-})
 
 export const metadata: Metadata = {
   title: 'Socialis',
@@ -44,9 +27,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
-      <body className={`${dmSans.variable} ${syne.variable} ${dmMono.variable} font-sans`}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Syne:wght@600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+      </head>
+      <body>
         {children}
       </body>
     </html>
   )
 }
+
